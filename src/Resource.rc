@@ -1,0 +1,326 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// 英语(美国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// RT_MANIFEST
+//
+
+1                       RT_MANIFEST             "../src/res/Win32++.manifest"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDW_MAIN MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "E&xit",                       IDM_FILE_EXIT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Tool Bar",                   IDW_VIEW_TOOLBAR, CHECKED
+        MENUITEM "&Status Bar",                 IDW_VIEW_STATUSBAR, CHECKED
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "MDI Tabs at Top",             IDM_TABBEDMDI_TOP, CHECKED
+        MENUITEM "Container Tabs at Top",       IDM_CONTAINER_TOP, CHECKED
+        MENUITEM "Hide Single Container Tab",   IDM_HIDE_SINGLE_TAB, CHECKED
+    END
+    POPUP "&Layout"
+    BEGIN
+        MENUITEM "&Default Layout",             IDM_DEFAULT_LAYOUT
+        MENUITEM "Close All &Containers",       IDM_CLOSE_DOCKERS
+        MENUITEM "Close All &MDI Children",     IDM_CLOSE_MDIS
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About",                      IDM_HELP_ABOUT
+    END
+END
+
+IDM_NEWMENU MENU 
+BEGIN
+    POPUP "New"
+    BEGIN
+        MENUITEM "New &Browser",                IDM_FILE_NEWBROWSER
+        MENUITEM "New &Rectangle",              IDM_FILE_NEWRECT
+        MENUITEM "New &Text",                   IDM_FILE_NEWTEXT
+        MENUITEM "New TreeView",                IDM_FILE_NEWTREE
+        MENUITEM "New ListView",                IDM_FILE_NEWLIST
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDW_MAIN                ICON                    "../src/res/Docking.ico"
+IDI_CLASSVIEW           ICON                    "../src/res/classview.ico"
+IDI_DIALOGVIEW          ICON                    "../src/res/Dialog.ico"
+IDI_FILEVIEW            ICON                    "../src/res/fileview.ico"
+IDI_GLOBE               ICON                    "../src/res/Globe.ico"
+IDI_RECT                ICON                    "../src/res/rect.ico"
+IDI_TEXT                ICON                    "../src/res/text.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+//IDW_MAIN                BITMAP                  "../src/res/toolbar.bmp"
+IDW_MAIN                BITMAP                  "../src/res/Toolbar.bmp"
+IDW_SDBOTTOM            BITMAP                  "../src/res/SDbottom.bmp"
+IDW_SDCENTER            BITMAP                  "../src/res/SDcenter.bmp"
+IDW_SDLEFT              BITMAP                  "../src/res/SDleft.bmp"
+IDW_SDMIDDLE            BITMAP                  "../src/res/SDmiddle.bmp"
+IDW_SDRIGHT             BITMAP                  "../src/res/SDright.bmp"
+IDW_SDTOP               BITMAP                  "../src/res/SDtop.bmp"
+IDB_CLASSVIEW           BITMAP                  "../src/res/classview.bmp"
+IDB_FILEVIEW            BITMAP                  "../src/res/fileview.bmp"
+IDB_STATUS              BITMAP                  "../src/res/status.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDW_SPLITH              CURSOR                  "../src/res/SplitH.cur"
+IDW_SPLITV              CURSOR                  "../src/res/SplitV.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MYDIALOG DIALOGEX 0, 0, 206, 51
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    CONTROL         "Plain text",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON,146,
+                    20,42,12
+    CONTROL         "Mix text",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,146,30,
+                    42,12
+    PUSHBUTTON      "Send",IDC_BUTTON1,146,6,50,12
+    CONTROL         "",IDC_RICHEDIT2,"RICHEDIT",TCS_VERTICAL | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | WS_VSCROLL | WS_HSCROLL |
+                    TCS_MULTISELECT | WS_BORDER | WS_TABSTOP,7,4,129,42
+END
+
+IDW_ABOUT DIALOGEX 0, 0, 186, 90
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "About"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,68,49,50,14
+    CTEXT           "Docking Tabbed MDI Application",IDC_STATIC,60,22,64,17
+    ICON            IDW_MAIN,0,4,4,20,20
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDW_MAIN ACCELERATORS 
+BEGIN
+    "N",            IDM_FILE_NEW,           VIRTKEY, CONTROL, NOINVERT
+    "O",            IDM_FILE_OPEN,          VIRTKEY, CONTROL, NOINVERT
+    "P",            IDM_FILE_PRINT,         VIRTKEY, CONTROL, NOINVERT
+    "S",            IDM_FILE_SAVE,          VIRTKEY, CONTROL, NOINVERT
+    "C",            IDM_EDIT_COPY,          VIRTKEY, CONTROL, NOINVERT
+    "X",            IDM_EDIT_CUT,           VIRTKEY, CONTROL, NOINVERT
+    "V",            IDM_EDIT_PASTE,         VIRTKEY, CONTROL, NOINVERT
+    "Z",            IDM_EDIT_UNDO,          VIRTKEY, CONTROL, NOINVERT
+    "Y",            IDM_EDIT_REDO,          VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDW_MAIN                "Com Debug"
+    IDW_VIEW_TOOLBAR        "Show or hide the tool bar"
+    IDW_VIEW_STATUSBAR      "Show or hide the status bar"
+    IDW_READY               "Ready"
+    IDW_INDICATOR_CAPS      "CAP"
+    IDW_INDICATOR_NUM       "NUM"
+END
+
+STRINGTABLE 
+BEGIN
+    IDW_INDICATOR_SCRL      "SCRL"
+    IDW_FIRSTCHILD          "Activate this window"
+    IDW_CHILD2              "Activate this window"
+    IDW_CHILD3              "Activate this window"
+    IDW_CHILD4              "Activate this window"
+    IDW_CHILD5              "Activate this window"
+    IDW_CHILD6              "Activate this window"
+    IDW_CHILD7              "Activate this window"
+    IDW_CHILD8              "Activate this window"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_FILE_NEW            "Connect Terminal"
+    IDM_FILE_OPEN           "Disconnect Terminal"
+    IDM_FILE_SAVE           "Save all Documents"
+    IDM_FILE_SAVEAS         "Save the Document with a new name"
+    IDM_FILE_PRINT          "Print the Document"
+    IDM_FILE_EXIT           "End the Program"
+    IDM_EDIT_UNDO           "Undo the last action"
+    IDM_EDIT_REDO           "Redo the previously undone action"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_FILE_NEWBROWSER     "Create Simple MDI Child"
+    IDM_FILE_NEWRECT        "Create Rect MDI Child"
+    IDM_FILE_NEWTEXT        "Create Text MDI Child"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_FILE_NEWTREE        "Create Tree-View MDI Child"
+    IDM_FILE_NEWLIST        "Create List-View MDI Child"
+    IDM_CONTAINER_TOP       "Place Tabs at the top of the containers"
+    IDM_TABBEDMDI_TOP       "Place Tabs at the top of the MDITab"
+    IDM_HIDE_SINGLE_TAB     "Hide single tabs in containers"
+    IDM_DEFAULT_LAYOUT      "Restore default dock layout"
+    IDM_CLOSE_DOCKERS       "Close all docked and undocked windows"
+    IDM_CLOSE_MDIS          "Close all MDI Children"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_EDIT_CUT            "Cut the Selected Contents to the Clipboard"
+    IDM_EDIT_COPY           "Copy the Selected Contents to the Clipboard"
+    IDM_EDIT_PASTE          "Paste the Clipboard Contents to the Document"
+    IDM_EDIT_DELETE         "Erase the selected Contents"
+    IDM_HELP_ABOUT          "Display Information about this program"
+END
+
+STRINGTABLE 
+BEGIN
+    IDW_CHILD9              "Activate this window"
+    IDW_CHILD10             "Select a window"
+END
+
+STRINGTABLE 
+BEGIN
+    61536                   "Close the Window"
+END
+
+STRINGTABLE 
+BEGIN
+    61488                   "Maximize the Window"
+END
+
+STRINGTABLE 
+BEGIN
+    61472                   "Minimize the WIndow"
+END
+
+STRINGTABLE 
+BEGIN
+    61456                   "Move the Window"
+END
+
+STRINGTABLE 
+BEGIN
+    61504                   "Select Next Window"
+END
+
+STRINGTABLE 
+BEGIN
+    61520                   "Select Previous Window"
+END
+
+STRINGTABLE 
+BEGIN
+    61728                   "Restore the Window"
+END
+
+STRINGTABLE 
+BEGIN
+    61440                   "Resize the Window"
+END
+
+#endif    // 英语(美国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
