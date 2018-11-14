@@ -110,9 +110,10 @@ static void paser_connect_string(char *connect_str, CONNECTINFO *connect_info)
 // CViewOutput functions
 CViewOutput::CViewOutput()
 {
-	display_mode=0;
+	display_mode=DISMODE_CHAR;
 	in_counts=0;
 	out_counts=0;
+	recv_data_count=0;
 	m_Socket.parent_ptr=this;
 	m_Socket.ConnectStatus=0;
 }
@@ -143,11 +144,12 @@ void CViewOutput::PreCreate(CREATESTRUCT& cs)
 	paser_connect_string(connect_str, &connect_info);
 }
 
-static char *mode_string[3]={"Char", "Hex", "Hex + Char"};
+static char *mode_string[4]={"Char", "Hex", "Time", "Echo"};
+static char *conn_string[2]={"DISCONNECT", "CONNECT   "};
 
 int CViewOutput::GetStatusString(char *status_string)
 {
-	int retval=0;
+	int retval=1, i, flag=0;
 	char temp_string[128];
 	
 	if(status_string==NULL) status_string=temp_string;
@@ -157,29 +159,35 @@ int CViewOutput::GetStatusString(char *status_string)
 	{
 		if(!m_Serial.m_bOpened)
 		{
-			status_string+=sprintf(status_string, "DISCONNECT");
+			retval=0;
 		}
-		else
-		{
-			retval=1;
-			status_string+=sprintf(status_string, "CONNECT   ");
-		}
-
-		sprintf(status_string, "     Rx: %-8d   Tx: %-8d   Mode: %s", in_counts, out_counts, mode_string[display_mode]);
 	}
 	else if(connect_info.mode==2)
 	{
 		if(!m_Socket.ConnectStatus)
 		{
-			status_string+=sprintf(status_string, "DISCONNECT");
+			retval=0;
 		}
-		else
-		{
-			retval=1;
-			status_string+=sprintf(status_string, "CONNECT   ");
-		}
+	}
+	else retval=-1;
 
-		sprintf(status_string, "     Rx: %-8d   Tx: %-8d   Mode: %s", in_counts, out_counts, mode_string[display_mode]);
+	if(retval!=-1)
+	{
+		status_string+=sprintf(status_string, "%s", conn_string[retval]);
+		status_string+=sprintf(status_string, "     Rx: %-8d   Tx: %-8d   Mode: ", in_counts, out_counts);
+		for(i=0;i<4;i++)
+		{
+			if(display_mode&(1<<i))
+			{
+				if(flag) status_string+=sprintf(status_string, " + ");
+				status_string+=sprintf(status_string, "%s", mode_string[i]);
+				flag=1;
+			}
+		}
+	}
+	else
+	{
+		retval=0;
 	}
 
 	return retval;
@@ -200,61 +208,75 @@ void CViewOutput::AppendString(char *str)
 	SendMessage(WM_VSCROLL, MAKEWPARAM(SB_BOTTOM,0), 0);
 }
 
-void CViewOutput::DisplayData(char *data, int count)
+static char *dirt_string[2]={"RECV", "SEND"};
+void CViewOutput::DisplayData(char *data, int count, SYSTEMTIME *st, int if_send)
 {
 	int i, len;
 	char *hex_string_ptr;
+	unsigned char rest_hex_data[64];
 	char hex_string_line[256];
 
 	SaveLog(data, count);
-	if(display_mode==0)
+	if((display_mode&0x07)==DISMODE_CHAR)
 	{
 		for(i=0;i<count;i++) if(data[i]=='\0') data[i]='.';
 		data[count]='\0';
 		AppendString(data);
 	}
-	else if((display_mode==1)||(display_mode==2))
+	else
 	{
-		do
+		if(display_mode&DISMODE_TIME)
 		{
 			hex_string_ptr=hex_string_line;
-			len=32-rest_hex_count;
-			if(count<len) len=count;
-			if(len>0)
-			{
-				memcpy(&rest_hex_data[rest_hex_count], data, len);
-				data+=len;
-				count-=len;
-				rest_hex_count+=len;
-				rest_hex_data[rest_hex_count]='\0';
-			}
-			
-			if((rest_hex_count<32)&&(data!=0)) break;
-			
-			for(i=0;i<rest_hex_count;i++)
-			{
-				hex_string_ptr+=sprintf(hex_string_ptr, "%02X ", rest_hex_data[i]);
-				if(rest_hex_data[i]<' ') rest_hex_data[i]='.';
-			}
-
-			if(display_mode==2)
-			{
-				if(rest_hex_count<32)
-				{
-					len=3*(32-rest_hex_count);
-					memset(hex_string_ptr, ' ', len);
-					hex_string_ptr+=len;
-				}
-				sprintf(hex_string_ptr, ": %s\r\n", (char *)rest_hex_data);
-			}
-			else
-			{
-				sprintf(hex_string_ptr, "\r\n");
-			}
-			
-			rest_hex_count=0;
+			hex_string_ptr+=sprintf(hex_string_ptr, "\r\n------ %s %d Bytes ", dirt_string[if_send], count);
+			hex_string_ptr+=sprintf(hex_string_ptr, "%02d/%02d/%02d %02d:%02d:%02d.%03d ------\r\n",
+				st->wYear, st->wMonth, st->wDay, st->wHour, st->wMinute, st->wSecond, st->wMilliseconds);
 			AppendString(hex_string_line);
-		}while(count>0);
+		}
+		
+		if(display_mode&DISMODE_HEX)
+		{
+			while(count>0)
+			{
+				hex_string_ptr=hex_string_line;
+				len=32;
+				if(count<len) len=count;
+				
+				memcpy(rest_hex_data, data, len);
+				rest_hex_data[len]='\0';
+				count-=len;
+				data+=len;
+				
+				for(i=0;i<len;i++)
+				{
+					hex_string_ptr+=sprintf(hex_string_ptr, "%02X ", rest_hex_data[i]);
+					if(rest_hex_data[i]<' ') rest_hex_data[i]='.';
+				}
+
+				if(display_mode&DISMODE_CHAR)
+				{
+					if(len<32)
+					{
+						len=3*(32-len);
+						memset(hex_string_ptr, ' ', len);
+						hex_string_ptr+=len;
+					}
+					sprintf(hex_string_ptr, ": %s\r\n", (char *)rest_hex_data);
+				}
+				else
+				{
+					sprintf(hex_string_ptr, "\r\n");
+				}
+				
+				AppendString(hex_string_line);
+			}
+		}
+		else
+		{
+			for(i=0;i<count;i++) if(data[i]=='\0') data[i]='.';
+			data[count]='\0';
+			AppendString(data);
+		}
 	}
 }
 
@@ -289,9 +311,12 @@ LRESULT CViewOutput::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case WM_CUSTOMIZE_DISMODE:
 			if((int)wParam!=display_mode)
 			{
+				if(recv_data_count>0)
+				{
+					DisplayData(recv_data_temp, recv_data_count, &pre_st, 0);
+					recv_data_count=0;
+				}
 				display_mode=(int)wParam;
-				if(display_mode>2) display_mode=0;
-				rest_hex_count=0;
 				ClearOutputText();
 				ClearTransCounts();
 				//theApp_ptr->m_Frame.SendMessage(WM_CUSTOMIZE_STATUS, 0, 0);
@@ -494,6 +519,7 @@ LRESULT CViewOutput::OnComSend(WPARAM wParam, LPARAM lParam)
 	char *new_data=NULL;
 	char *new_data_ptr;
 	char *temp_ptr=old_data;
+	SYSTEMTIME st;
 
 	if(((connect_info.mode==1)&&(!m_Serial.m_bOpened))
 		||((connect_info.mode==2)&&(!m_Socket.ConnectStatus)))
@@ -550,13 +576,16 @@ LRESULT CViewOutput::OnComSend(WPARAM wParam, LPARAM lParam)
 		len=new_data_ptr-new_data;
 	}
 
+	GetLocalTime(&st);
 	if(connect_info.mode==1)
 	{
 		m_Serial.SendData(temp_ptr, len);
+		if(display_mode&DISMODE_ECHO) DisplayData(temp_ptr, len, &st, 1);
 	}
 	else if(connect_info.mode==2)
 	{
 		m_Socket.Send(temp_ptr, len, 0);
+		if(display_mode&DISMODE_ECHO) DisplayData(temp_ptr, len, &st, 1);
 	}
 	if(new_data!=NULL) free(new_data);
 	out_counts+=len;
@@ -580,25 +609,34 @@ BOOL CViewOutput::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void CViewOutput::OnSerialTimer()
 {
-	int retval, flag=0;
+	int retval;
 	char temp_recv[1024];
 	
 	if(connect_info.mode==1)
 	{
 		if(m_Serial.m_bOpened)
 		{
-			retval=m_Serial.ReadData(temp_recv, sizeof(temp_recv)-1);
+			retval=m_Serial.ReadData(&(recv_data_temp[recv_data_count]), sizeof(recv_data_temp)-recv_data_count-1);
 			if(retval>0)
 			{
+				if(recv_data_count==0)
+				{
+					GetLocalTime(&pre_st);
+				}
+				recv_data_count+=retval;
 				in_counts+=retval;
-				DisplayData(temp_recv, retval);
-				//temp_recv[retval]='\0';
-				//AppendString(temp_recv);
+				if((display_mode&0x07)==DISMODE_CHAR)
+				{
+					DisplayData(recv_data_temp, recv_data_count, 0, 0);
+					recv_data_count=0;
+				}
 				theApp_ptr->m_Frame.SendMessage(WM_CUSTOMIZE_STATUS, 0, 0);
 			}
-			else if(rest_hex_count>0)
+			else if(recv_data_count>0)
 			{
-				DisplayData(0, 0);
+				DisplayData(recv_data_temp, recv_data_count, &pre_st, 0);
+				recv_data_count=0;
+				//theApp_ptr->m_Frame.SendMessage(WM_CUSTOMIZE_STATUS, 0, 0);
 			}
 		}
 	}
@@ -634,22 +672,16 @@ void CViewOutput::OnSerialTimer()
 		}
 		else
 		{
-			while((retval=m_Socket.Receive(temp_recv, sizeof(temp_recv)-1, 0))>0)
+			GetLocalTime(&pre_st);
+			while((retval=m_Socket.Receive(recv_data_temp, sizeof(recv_data_temp)-1, 0))>0)
 			{
-				flag=1;
 				in_counts+=retval;
-				DisplayData(temp_recv, retval);
-				//temp_recv[retval]='\0';
-				//AppendString(temp_recv);
+				DisplayData(recv_data_temp, retval, &pre_st, 0);
 			}
 
 			if((retval==0)||(WSAGetLastError()!=WSAEWOULDBLOCK))
 			{
 				OnConnectClose();
-			}
-			else if((flag==0)&&(rest_hex_count>0))
-			{
-				DisplayData(0, 0);
 			}
 			
 			theApp_ptr->m_Frame.SendMessage(WM_CUSTOMIZE_STATUS, 0, 0);

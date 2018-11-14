@@ -36,10 +36,11 @@ public:
 	int GetStatusString(char *status_string);
 	void ClearTransCounts();
 	void ClearOutputText();
-	void DisplayData(char *data, int count);
+	void DisplayData(char *data, int count, SYSTEMTIME *st, int if_send);
 	char connect_str[128];
-	unsigned char rest_hex_data[64];
-	int rest_hex_count;
+	char recv_data_temp[2048];
+	int recv_data_count;
+	SYSTEMTIME pre_st;
 
 protected:
     virtual void OnAttach();

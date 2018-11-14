@@ -59,7 +59,7 @@ void CMainFrame::LoadDefaultDockers()
 	pCDockText->set_CContainText_file_name("common.psc");
 	CDocker* pDockRight  = AddDockedChild(pCDockText, DS_DOCKED_RIGHT | dwStyle, 350, ID_DOCK_TEXT1);
 
-	CDocker* pDockBottom = AddDockedChild(new CDockDialog, DS_DOCKED_BOTTOM | dwStyle, 135, ID_DOCK_DIALOG);
+	CDocker* pDockBottom = AddDockedChild(new CDockDialog, DS_DOCKED_BOTTOM | dwStyle, 136, ID_DOCK_DIALOG);
 	pDockBottom->SetDockStyle(DS_NO_CLOSE | DS_NO_RESIZE | pDockBottom->GetDockStyle());
 }
 
@@ -405,6 +405,8 @@ void CMainFrame::OnInitialUpdate()
     // PreCreate initially set the window as invisible, so show it now.
     ShowWindow(GetInitValues().ShowCmd);
     RedrawWindow(RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
+
+    //OnFileNewPSC("common.psc");
 }
 
 LRESULT CMainFrame::OnInitMenuPopup(UINT uMsg, WPARAM wParam, LPARAM lParam)

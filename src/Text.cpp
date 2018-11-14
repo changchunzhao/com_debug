@@ -339,26 +339,28 @@ void CViewText::OnBUTTONDBLCLK()
 	}
 	else if((len>2)&&(test_string[0]=='D')&&(test_string[1]==':'))
 	{
-		if((strstr(test_string, "hex"))&&(strstr(test_string, "char")))
+		len=0;
+		if(strstr(test_string, "char"))
 		{
-			if(pTabbedMDI->GetActiveMDIChild())
-			{
-				pTabbedMDI->GetActiveMDIChild()->SendMessage(WM_CUSTOMIZE_DISMODE, 2, 0);
-			}
+			len|=DISMODE_CHAR;
 		}
-		else if(strstr(test_string, "hex"))
+		if(strstr(test_string, "hex"))
 		{
-			if(pTabbedMDI->GetActiveMDIChild())
-			{
-				pTabbedMDI->GetActiveMDIChild()->SendMessage(WM_CUSTOMIZE_DISMODE, 1, 0);
-			}
+			len|=DISMODE_HEX;
 		}
-		else if(strstr(test_string, "char"))
+		if(strstr(test_string, "time"))
 		{
-			if(pTabbedMDI->GetActiveMDIChild())
-			{
-				pTabbedMDI->GetActiveMDIChild()->SendMessage(WM_CUSTOMIZE_DISMODE, 0, 0);
-			}
+			len|=DISMODE_TIME;
+		}
+		if(strstr(test_string, "echo"))
+		{
+			len|=DISMODE_ECHO;
+		}
+
+		if((len&0x03)==0) len|=DISMODE_CHAR;
+		if(pTabbedMDI->GetActiveMDIChild())
+		{
+			pTabbedMDI->GetActiveMDIChild()->SendMessage(WM_CUSTOMIZE_DISMODE, len, 0);
 		}
 	}
 	else if((len>2)&&(test_string[0]=='C')&&(test_string[1]==':'))
