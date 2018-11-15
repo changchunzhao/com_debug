@@ -123,6 +123,9 @@
 				RelativePath=".\src\Classes.cpp">
 			</File>
 			<File
+				RelativePath=".\src\crc.c">
+			</File>
+			<File
 				RelativePath=".\src\Files.cpp">
 			</File>
 			<File

@@ -17,9 +17,9 @@ static void paser_connect_string(char *connect_str, CONNECTINFO *connect_info)
 	char connect_str_cp[128];
 	char *param_ptr;
 	int i, flag;
-	char dumpbuffer [12];
-	char dbuffer [12];
-	char tbuffer [12];
+	//char dumpbuffer [12];
+	//char dbuffer [12];
+	//char tbuffer [12];
 	
 	memset(connect_info, 0, sizeof(CONNECTINFO));
 	strcpy(connect_str_cp, connect_str);
@@ -64,12 +64,12 @@ static void paser_connect_string(char *connect_str, CONNECTINFO *connect_info)
 				}
 				else
 				{
-					strcpy(connect_info->dump_file, param_ptr);
+					//strcpy(connect_info->dump_file, param_ptr);
 				}
 			}
 			else if(i==3)
 			{
-				if(connect_info->mode==1) strcpy(connect_info->dump_file, param_ptr);
+				//if(connect_info->mode==1) strcpy(connect_info->dump_file, param_ptr);
 			}
 			i++;
 			param_ptr=connect_str;
@@ -81,6 +81,7 @@ static void paser_connect_string(char *connect_str, CONNECTINFO *connect_info)
 		connect_str++;
 	}
 
+	#if 0
 	if(strcmp(connect_info->dump_file, "L")==0)
 	{
 		_strdate(dumpbuffer);
@@ -103,6 +104,7 @@ static void paser_connect_string(char *connect_str, CONNECTINFO *connect_info)
 
 		sprintf(connect_info->dump_file, "LOG_%s_%d_%s-%s.log", connect_info->com_ip_str, connect_info->baud_port, dbuffer, tbuffer);
 	}
+	#endif
 }
 
 
@@ -116,6 +118,8 @@ CViewOutput::CViewOutput()
 	recv_data_count=0;
 	m_Socket.parent_ptr=this;
 	m_Socket.ConnectStatus=0;
+	recv_log_file[0]='\0';
+	disp_log_file[0]='\0';
 }
 
 CViewOutput::~CViewOutput()
@@ -200,6 +204,16 @@ void CViewOutput::OnEditCopy()
 
 void CViewOutput::AppendString(char *str)
 {
+	if(disp_log_file[0]!=0)
+	{
+		FILE* fd = fopen(disp_log_file, "ab+");
+		if (fd != NULL)
+		{
+			fwrite(str, 1, strlen(str), fd);
+			fclose(fd);
+		}
+	}
+
 	CHARRANGE cr;
 	cr.cpMin = -1;
 	cr.cpMax = -1;
@@ -280,6 +294,57 @@ void CViewOutput::DisplayData(char *data, int count, SYSTEMTIME *st, int if_send
 	}
 }
 
+void CViewOutput::SetLogFileName(int type, char *name_string)
+{
+	char *log_name_ptr;
+	char *type_string;
+	char temp_string[128];
+	
+	if(type==0)
+	{
+		log_name_ptr=recv_log_file;
+		type_string="RECV";
+	}
+	else
+	{
+		log_name_ptr=disp_log_file;
+		type_string="DISP";
+	}
+
+	if(log_name_ptr[0]=='\0')
+	{
+		strcpy(log_name_ptr, name_string);
+		if(strcmp(log_name_ptr, "L")==0)
+		{
+			char dumpbuffer [12];
+			char dbuffer [12];
+			char tbuffer [12];
+			
+			_strdate(dumpbuffer);
+			dbuffer[0]=dumpbuffer[6];
+			dbuffer[1]=dumpbuffer[7];
+			dbuffer[2]=dumpbuffer[0];
+			dbuffer[3]=dumpbuffer[1];
+			dbuffer[4]=dumpbuffer[3];
+			dbuffer[5]=dumpbuffer[4];
+			dbuffer[6]='\0';
+			
+			_strtime(dumpbuffer);
+			tbuffer[0]=dumpbuffer[0];
+			tbuffer[1]=dumpbuffer[1];
+			tbuffer[2]=dumpbuffer[3];
+			tbuffer[3]=dumpbuffer[4];
+			tbuffer[4]=dumpbuffer[6];
+			tbuffer[5]=dumpbuffer[7];
+			tbuffer[6]='\0';
+
+			sprintf(log_name_ptr, "%sLOG_%s_%d_%s-%s.log", type_string, connect_info.com_ip_str, connect_info.baud_port, dbuffer, tbuffer);
+		}
+	}
+	sprintf(temp_string, "%s log file: %s\r\n", type_string, log_name_ptr);
+	AppendString(temp_string);
+}
+
 LRESULT CViewOutput::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -322,6 +387,10 @@ LRESULT CViewOutput::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 				//theApp_ptr->m_Frame.SendMessage(WM_CUSTOMIZE_STATUS, 0, 0);
 			}
 			return TRUE;
+		
+		case WM_CUSTOMIZE_LOG:
+			SetLogFileName((int)wParam, (char *)lParam);
+			return TRUE;
 	}
 	return WndProcDefault(uMsg, wParam, lParam);
 }
@@ -345,7 +414,7 @@ void CViewOutput::OnConnectOpen()
 			}
 			else
 			{
-				debug_string_ptr+=sprintf(debug_string_ptr, "SUCCESS %1d%1d%1d %s\r\n", (connect_info.databits), (connect_info.stopbits), (connect_info.parity), connect_info.dump_file);
+				debug_string_ptr+=sprintf(debug_string_ptr, "SUCCESS %1d%1d%1d\r\n", (connect_info.databits), (connect_info.stopbits), (connect_info.parity));
 				//debug_string_ptr+=sprintf(debug_string_ptr, "GetLimitText %d\r\n", GetLimitText()); //valure auto increased
 				if(connect_info.baud_port>=38400) SetTimer(1000, 1, NULL);
 				else if(connect_info.baud_port>=9600) SetTimer(1000, 10, NULL);
@@ -502,14 +571,20 @@ static int bytes2hex(char *in, unsigned char *out, int c)
 
 void CViewOutput::SaveLog(char *data, int len)
 {
-	if((connect_info.dump_file[0]==0)||(len==0)) return;
+	if((recv_log_file[0]==0)||(len==0)) return;
 	
-	FILE* fd = fopen(connect_info.dump_file, "ab+");
+	FILE* fd = fopen(recv_log_file, "ab+");
 	if (fd != NULL)
 	{
 		fwrite(data, 1, len, fd);
 		fclose(fd);
 	}
+}
+
+extern "C" 
+{
+extern unsigned short edsn_CRC16(unsigned char *pu8Msg, int u32Len, unsigned short CRC16);
+extern unsigned int crc32c(unsigned int crc, const unsigned char *data, int length);
 }
 
 LRESULT CViewOutput::OnComSend(WPARAM wParam, LPARAM lParam)
@@ -519,6 +594,8 @@ LRESULT CViewOutput::OnComSend(WPARAM wParam, LPARAM lParam)
 	char *new_data=NULL;
 	char *new_data_ptr;
 	char *temp_ptr=old_data;
+	unsigned int crc;
+	int start_pos;
 	SYSTEMTIME st;
 
 	if(((connect_info.mode==1)&&(!m_Serial.m_bOpened))
@@ -545,16 +622,61 @@ LRESULT CViewOutput::OnComSend(WPARAM wParam, LPARAM lParam)
 				temp_ptr=strstr(old_data, "]");
 				if(temp_ptr!=NULL)
 				{
-					len=bytes2hex(old_data+1, (unsigned char *)new_data_ptr, temp_ptr-old_data-1);
-					if(len<=0)
+					if(memcmp(old_data+1, "CRC16", 5)==0)
 					{
-						*new_data_ptr=*old_data;
-						new_data_ptr++;
+						crc=0xFFFFFFFF;
+						start_pos=0;
+						sscanf(old_data+1, "CRC16:%d:%x", start_pos, crc);
+						len=new_data_ptr-new_data;
+						if((start_pos>=len)||(start_pos<0))
+						{
+							*new_data_ptr++=0;
+							*new_data_ptr++=0;
+						}
+						else
+						{
+							crc=edsn_CRC16((unsigned char *)(new_data+start_pos), len-start_pos, (unsigned short)crc);
+							*new_data_ptr++=(crc>>8)&0xFF;
+							*new_data_ptr++=(crc>>0)&0xFF;
+						}
+						old_data=temp_ptr;
+					}
+					else if(memcmp(old_data+1, "CRC32", 5)==0)
+					{
+						crc=0xFFFFFFFF;
+						start_pos=0;
+						sscanf(old_data+1, "CRC32:%d:%x", start_pos, crc);
+						len=new_data_ptr-new_data;
+						if((start_pos>=len)||(start_pos<0))
+						{
+							*new_data_ptr++=0;
+							*new_data_ptr++=0;
+							*new_data_ptr++=0;
+							*new_data_ptr++=0;
+						}
+						else
+						{
+							crc=crc32c(crc, (unsigned char *)(new_data+start_pos), len-start_pos);
+							*new_data_ptr++=(crc>>24)&0xFF;
+							*new_data_ptr++=(crc>>16)&0xFF;
+							*new_data_ptr++=(crc>>8)&0xFF;
+							*new_data_ptr++=(crc>>0)&0xFF;
+						}
+						old_data=temp_ptr;
 					}
 					else
 					{
-						new_data_ptr+=len;
-						old_data=temp_ptr;
+						len=bytes2hex(old_data+1, (unsigned char *)new_data_ptr, temp_ptr-old_data-1);
+						if(len<=0)
+						{
+							*new_data_ptr=*old_data;
+							new_data_ptr++;
+						}
+						else
+						{
+							new_data_ptr+=len;
+							old_data=temp_ptr;
+						}
 					}
 				}
 				else
@@ -652,7 +774,7 @@ void CViewOutput::OnSerialTimer()
 			{
 				m_Socket.ConnectStatus=1;
 				
-				sprintf(temp_recv, "Open %s:%d SUCCESS %s\r\n", connect_info.com_ip_str, connect_info.baud_port, connect_info.dump_file);
+				sprintf(temp_recv, "Open %s:%d SUCCESS\r\n", connect_info.com_ip_str, connect_info.baud_port);
 				
 				AppendString(temp_recv);
 				SaveLog("--------------------\r\n", 22);

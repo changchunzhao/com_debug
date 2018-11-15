@@ -16,7 +16,6 @@ typedef struct
 	int databits;
 	int stopbits;
 	int parity;
-	char dump_file[128];
 	int mode;
 }CONNECTINFO;
 
@@ -51,6 +50,7 @@ protected:
 	//virtual LRESULT OnTimer(WPARAM wParam, LPARAM lParam);
 	LRESULT On1Timer(WPARAM wParam, LPARAM lParam);
 	void SaveLog(char *data, int len);
+	void SetLogFileName(int type, char *name_string);
 
 private:
     CFont m_Font;
@@ -60,6 +60,8 @@ private:
 	int in_counts;
 	int out_counts;
 	int display_mode;
+	char recv_log_file[128];
+	char disp_log_file[128];
 
 	class VCCSocket : public CSocket
 	{

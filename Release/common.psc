@@ -12,17 +12,19 @@ E:edit
 D:hex
 D:char
 D:hex char
+D:hex char echo time
 
 ##open uart or tcp client
-T:com3
+T:com3:115200:810
 T:com4
 T:CNCA0
 T:192.168.0.251:7788
 
-##open uart or tcp client and log received data
-T:com3:115200:810:L
-T:com5:::L
-T:192.168.0.251:7788:L
+##log receive data
+L:L
+L:test.log
+##log display data
+l:L
 
 ##open another command document.
 F:at.txt

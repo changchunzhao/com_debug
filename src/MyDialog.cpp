@@ -205,15 +205,23 @@ BOOL CViewDialog::OnButton()
 	if(string_mode==1)
 	{
 		sleep_time=0;
-		sscanf(temp_str, "A:%d:", &sleep_time);
-		if(sleep_time<=0) return TRUE;
-		while((*auto_send_str!=':')&&(*auto_send_str!='\0')) auto_send_str++;
-		if(*auto_send_str!='\0') auto_send_str++;
-		while((*auto_send_str!=':')&&(*auto_send_str!='\0')) auto_send_str++;
-		if(*auto_send_str!='\0')
+		if(sscanf(temp_str, "A:%d:", &sleep_time)==1)
 		{
-			auto_send_str++;
-			flag=1;
+			if(sleep_time<=0)
+			{
+				free(temp_str);
+				temp_str=NULL;
+				auto_send_str=NULL;
+				return TRUE;
+			}
+			while((*auto_send_str!=':')&&(*auto_send_str!='\0')) auto_send_str++;
+			if(*auto_send_str!='\0') auto_send_str++;
+			while((*auto_send_str!=':')&&(*auto_send_str!='\0')) auto_send_str++;
+			if(*auto_send_str!='\0')
+			{
+				auto_send_str++;
+				flag=1;
+			}
 		}
 	}
 	

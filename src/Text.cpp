@@ -388,6 +388,20 @@ void CViewText::OnBUTTONDBLCLK()
 		}
 		
 	}
+	else if((len>2)&&((test_string[0]=='L')||(test_string[0]=='l'))&&(test_string[1]==':'))
+	{
+		len=strlen(test_string);
+		if(test_string[len-1]==0x0D) test_string[len-1]='\0';
+		len=2;
+		while(test_string[len]==' ') len++;
+		if(pTabbedMDI->GetActiveMDIChild())
+		{
+			if(test_string[0]=='L')
+				pTabbedMDI->GetActiveMDIChild()->SendMessage(WM_CUSTOMIZE_LOG, 0, (LPARAM)(test_string+len));
+			else
+				pTabbedMDI->GetActiveMDIChild()->SendMessage(WM_CUSTOMIZE_LOG, 1, (LPARAM)(test_string+len));
+		}
+	}
 	else
 	{
 		len=strlen(test_string);
